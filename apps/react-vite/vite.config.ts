@@ -9,10 +9,10 @@ export default defineConfig({
   base: './',
   plugins: [react(), viteTsconfigPaths()],
   server: {
-    port: 3000,
+    port: 4000,
   },
   preview: {
-    port: 3000,
+    port: 4000,
   },
   test: {
     globals: true,
