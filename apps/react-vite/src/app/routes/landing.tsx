@@ -5,16 +5,30 @@ import { Head } from '@/components/seo';
 import { Button } from '@/components/ui/button';
 import { paths } from '@/config/paths';
 import { useUser } from '@/lib/auth';
+import { webTracer } from '@/lib/instrumentation.js';
 
 const LandingRoute = () => {
   const navigate = useNavigate();
   const user = useUser();
 
   const handleStart = () => {
-    if (user.data) {
-      navigate(paths.app.dashboard.getHref());
-    } else {
-      navigate(paths.auth.login.getHref());
+    const span = webTracer.startSpan('landing_get_started_click');
+    span.addEvent('Get startedボタンクリック');
+    try {
+      if (user.data) {
+        span.addEvent('ログイン済み: ダッシュボードへ遷移');
+        navigate(paths.app.dashboard.getHref());
+      } else {
+        span.addEvent('未ログイン: ログインページへ遷移');
+        navigate(paths.auth.login.getHref());
+      }
+      span.setStatus({ code: 1 }); // OK
+    } catch (e) {
+      span.recordException(e as any);
+      span.setStatus({ code: 2 }); // ERROR
+      throw e;
+    } finally {
+      span.end();
     }
   };
 
